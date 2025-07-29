@@ -1,6 +1,6 @@
 # MAB - Managing Annotated Bibliography with Ebib
 
-![Version](https://img.shields.io/static/v1?label=matplotlib-voice-in&message=0.0&color=brightcolor)
+![Version](https://img.shields.io/static/v1?label=matplotlib-voice-in&message=0.1&color=brightcolor)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Modular and Annotated Bibliography (mab) is an Emacs package that interfaces with  [ebib](https://github.com/joostkremers/ebib) to easily add bibliography entries to your reading lists in org-mode files. 
