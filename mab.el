@@ -55,9 +55,11 @@ INCLUDE statement, and a Notes drawer with file links to both papers and books."
                        (read-file-name 
                         (format "Modular and annotated bibliography (mab) file (default %s): " mab-path)
                         (file-name-directory default-path)
-                        default-path)))
-           ;; Update the customizable variable with the new path for future use
-           (setq mab-path file-path))
+                        default-path))))
+      
+      ;; Update the customizable variable with the new path for future use
+      (setq mab-path file-path)
+      
       (if (file-exists-p file-path)
           (with-temp-buffer
             (insert-file-contents file-path)
