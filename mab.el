@@ -17,6 +17,9 @@
 ;;
 ;; The main command is `mab-add-bib-item', which is bound to "B"
 ;; in ebib-index-mode.
+;;
+;; The package also creates an org note file in ~/abibNotes/ when adding
+;; a new bibliography item if the file doesn't already exist.
 
 ;;; Code:
 
@@ -34,6 +37,39 @@ Default is set to the quantum crystallography project file."
   :type 'file
   :group 'mab)
 
+(defcustom mab-notes-directory "~/abibNotes/"
+  "Directory where notes files for bibliography entries are stored."
+  :type 'directory
+  :group 'mab)
+
+(defcustom mab-create-note-files t
+  "Whether to automatically create note files in `mab-notes-directory' when adding bibliography items."
+  :type 'boolean
+  :group 'mab)
+
+(defcustom mab-note-template "#+TITLE: %s\n#+AUTHOR: Blaine Mooers\n#+DATE: %s\n\n* Summary\n\n* Key Points\n\n* Methods\n\n* Results\n\n* Discussion\n\n* Notes\n\n* References\n\n"
+  "Template for new note files.
+%s will be replaced with the citation key and current date."
+  :type 'string
+  :group 'mab)
+
+(defun mab-ensure-directory-exists (directory)
+  "Make sure DIRECTORY exists, creating it if necessary."
+  (unless (file-exists-p directory)
+    (make-directory directory t)))
+
+(defun mab-create-note-file (key)
+  "Create a note file for KEY if it doesn't exist already."
+  (when mab-create-note-files
+    (let* ((notes-dir (expand-file-name mab-notes-directory))
+           (note-file (expand-file-name (concat key ".org") notes-dir)))
+      (mab-ensure-directory-exists notes-dir)
+      (unless (file-exists-p note-file)
+        (with-temp-buffer
+          (insert (format mab-note-template key (format-time-string "%Y-%m-%d")))
+          (write-file note-file)
+          (message "Created note file at %s" note-file))))))
+
 ;;;###autoload
 (defun mab-add-bib-item ()
   "Append the currently selected ebib entry to the mab file.
@@ -41,7 +77,10 @@ The mab file is specified by the variable `mab-path',
 but the user will be prompted for the file path with the current value as default.
 The entry is added under the section 'Illustrated and annotated bibliography'
 and before 'Backmatter' with the format using org-mode LATEX directives,
-INCLUDE statement, and a Notes drawer with file links to both papers and books."
+INCLUDE statement, and a Notes drawer with file links to both papers and books.
+
+If `mab-create-note-files' is non-nil, also creates an org note file
+in `mab-notes-directory' if it doesn't already exist."
   (interactive)
   (unless (derived-mode-p 'ebib-index-mode)
     (error "This command can only be used in Ebib's index buffer"))
@@ -49,6 +88,9 @@ INCLUDE statement, and a Notes drawer with file links to both papers and books."
   (let ((key (ebib--get-key-at-point)))
     (unless key
       (error "No bibliography entry selected"))
+    
+    ;; Create the note file if it doesn't exist
+    (mab-create-note-file key)
     
     (let* ((default-path (expand-file-name mab-path))
            (file-path (expand-file-name 
@@ -71,11 +113,11 @@ INCLUDE statement, and a Notes drawer with file links to both papers and books."
                   (if (re-search-forward "\\\\section\\*{Backmatter}" nil t)
                       (progn
                         (beginning-of-line)
-                        ;; Insert the new entry before Backmatter using the new format
-                        (insert (format "#+LATEX: \\subsection*{\\bibentry{%s}}\n" key))
-                        (insert (format "#+LATEX: \\addcontentsline{toc}{subsection}{%s}\n" key))
-                        (insert (format "#+INCLUDE: /Users/blaine/abibNotes/%s.org\n" key))
-                        (insert ":Notes:\n")
+                        ;; Insert the new entry before Backmatter using the updated format
+                        (insert (format "#+LATEX: \\subsubsection*{\\bibentry{%s}}\n" key))
+                        (insert (format "#+LATEX: \\addcontentsline{toc}{subsubsection}{%s}\n" key))
+                        (insert (format "#+INCLUDE: %s%s.org\n" mab-notes-directory key))
+                        (insert ":NOTES:\n")
                         (insert (format "file:~/abibNotes/%s.org\n" key))
                         (insert (format "file:~/0papersLabeled/%s.pdf\n" key))
                         (insert (format "file:~/0booksLabeled/%s.pdf\n" key))
@@ -83,11 +125,11 @@ INCLUDE statement, and a Notes drawer with file links to both papers and books."
                         (insert ":END:\n\n"))
                     ;; No Backmatter section found, go to end of the document
                     (goto-char (point-max))
-                    ;; Insert the new entry at the end using the new format
-                    (insert (format "#+LATEX: \\subsection*{\\bibentry{%s}}\n" key))
-                    (insert (format "#+LATEX: \\addcontentsline{toc}{subsection}{%s}\n" key))
-                    (insert (format "#+INCLUDE: /Users/blaine/abibNotes/%s.org\n" key))
-                    (insert ":Notes:\n")
+                    ;; Insert the new entry at the end using the updated format
+                    (insert (format "#+LATEX: \\subsubsection*{\\bibentry{%s}}\n" key))
+                    (insert (format "#+LATEX: \\addcontentsline{toc}{subsubsection}{%s}\n" key))
+                    (insert (format "#+INCLUDE: %s%s.org\n" mab-notes-directory key))
+                    (insert ":NOTES:\n")
                     (insert (format "file:~/abibNotes/%s.org\n" key))
                     (insert (format "file:~/0papersLabeled/%s.pdf\n" key))
                     (insert (format "file:~/0booksLabeled/%s.pdf\n" key))
