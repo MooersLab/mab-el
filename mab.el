@@ -76,7 +76,7 @@ Default is set to the quantum crystallography project file."
 The mab file is specified by the variable `mab-path',
 but the user will be prompted for the file path with the current value as default.
 The entry is added under the section 'Illustrated and annotated bibliography'
-and before 'Backmatter' with the format using org-mode LATEX directives,
+and before 'Back matter' with the format using org-mode LATEX directives,
 INCLUDE statement, and a Notes drawer with file links to both papers and books.
 
 If `mab-create-note-files' is non-nil, also creates an org note file
@@ -109,11 +109,11 @@ in `mab-notes-directory' if it doesn't already exist."
             ;; Find the bibliography section
             (if (re-search-forward "\\\\section\\*{Illustrated and annotated bibliography}" nil t)
                 (let ((start-pos (point)))
-                  ;; Check if we have a Backmatter section
-                  (if (re-search-forward "\\\\section\\*{Backmatter}" nil t)
+                  ;; Check if we have a back matter section
+                  (if (re-search-forward "\\\\section\\*{Back matter}" nil t)
                       (progn
                         (beginning-of-line)
-                        ;; Insert the new entry before Backmatter using the updated format
+                        ;; Insert the new entry before Back matter using the updated format
                         (insert (format "#+LATEX: \\subsubsection*{\\bibentry{%s}}\n" key))
                         (insert (format "#+LATEX: \\addcontentsline{toc}{subsubsection}{%s}\n" key))
                         (insert (format "#+INCLUDE: %s%s.org\n" mab-notes-directory key))
@@ -123,7 +123,7 @@ in `mab-notes-directory' if it doesn't already exist."
                         (insert (format "file:~/0booksLabeled/%s.pdf\n" key))
                         (insert "Add more prose. Add tables. Add figures.\n")
                         (insert ":END:\n\n"))
-                    ;; No Backmatter section found, go to end of the document
+                    ;; No back matter section found, go to end of the document
                     (goto-char (point-max))
                     ;; Insert the new entry at the end using the updated format
                     (insert (format "#+LATEX: \\subsubsection*{\\bibentry{%s}}\n" key))
